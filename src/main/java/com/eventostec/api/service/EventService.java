@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Date;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -76,6 +78,14 @@ public class EventService {
         public Event getById(UUID eventId) {
         return repository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event not found for ID: " + eventId));
+    }
+
+        public List<Event> getAllEvents(Integer page, Integer size) {
+        if (page == null || size == null) {
+            return repository.findAll();
+        }
+
+        return repository.findAll(PageRequest.of(page, size)).getContent();
     }
 
 }
