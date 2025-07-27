@@ -3,6 +3,8 @@ package com.eventostec.api.controller;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -12,6 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.eventostec.api.domain.event.Event;
 import com.eventostec.api.domain.event.EventRequestDTO;
+import com.eventostec.api.domain.event.EventResponseDTO;
 import com.eventostec.api.service.EventService;
 
 import jakarta.websocket.server.PathParam;
@@ -30,8 +33,8 @@ public class EventController {
     }
 
     @GetMapping
-    public ResponseEntity<List<Event>> getAll(@PathParam("page") Integer page, @PathParam("size") Integer size) {
-        List<Event> events = eventService.getAllEvents(page, size);
+    public ResponseEntity<List<EventResponseDTO>> getAll(@PathParam("page") Integer page, @PathParam("size") Integer size) {
+        List<EventResponseDTO> events = eventService.getAllEvents(page, size);
         return ResponseEntity.ok(events);
     }
 }
