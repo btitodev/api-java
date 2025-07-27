@@ -1,0 +1,70 @@
+package com.eventostec.api.service;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.util.Date;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+
+import com.amazonaws.services.s3.AmazonS3;
+import com.eventostec.api.domain.event.Event;
+import com.eventostec.api.domain.event.EventRequestDTO;
+
+@Service
+public class EventService {
+
+    @Autowired
+    private AmazonS3 s3Client;
+
+    @Value("${aws.bucket.name}")
+    private String awsBucketName;
+
+    public Event createEvent(EventRequestDTO eventRequest) {
+        String imageUrl = null;
+
+        if (eventRequest.image() != null) {
+            imageUrl = this.uploadImage(eventRequest.image());
+        }
+
+        Event newEvent = new Event();
+        newEvent.setTitle(eventRequest.title());
+        newEvent.setDescription(eventRequest.description());
+        newEvent.setDate(new Date(eventRequest.date()));
+        newEvent.setRemote(eventRequest.remote());
+        newEvent.setEventUrl(eventRequest.eventUrl());
+        newEvent.setImageUrl(imageUrl);
+
+        return newEvent;
+    }
+
+    private String uploadImage(MultipartFile multipartFile) {
+        String imageName = UUID.randomUUID().toString() + "-" + multipartFile.getOriginalFilename();
+        try {
+            File file = this.convertMultipartToFile(multipartFile);
+            s3Client.putObject(awsBucketName, imageName, file);
+            file.delete(); 
+            return s3Client.getUrl(awsBucketName, imageName).toString();
+        } catch (Exception e) {
+            System.out.println("Error uploading image: " + e.getMessage());
+            return null;
+        }
+    }
+
+    private File convertMultipartToFile(MultipartFile file) throws IOException {
+        if (file.isEmpty()) {
+            throw new IllegalArgumentException("Cannot convert an empty file to a File object");
+        }
+        
+        File convFile = new File(file.getOriginalFilename());
+        try (FileOutputStream fos = new FileOutputStream(convFile)) {
+            fos.write(file.getBytes());
+        }
+        return convFile;
+    }
+
+}
