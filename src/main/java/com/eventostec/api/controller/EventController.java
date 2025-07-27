@@ -24,9 +24,4 @@ public class EventController {
         Event event = eventService.createEvent(body);
         return ResponseEntity.ok(event);
     }
-
-    @GetMapping("/teste")
-    public String teste () {
-        return "teste";
-    }
 }
