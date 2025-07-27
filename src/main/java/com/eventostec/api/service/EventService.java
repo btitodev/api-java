@@ -14,12 +14,16 @@ import org.springframework.web.multipart.MultipartFile;
 import com.amazonaws.services.s3.AmazonS3;
 import com.eventostec.api.domain.event.Event;
 import com.eventostec.api.domain.event.EventRequestDTO;
+import com.eventostec.api.repositories.EventRepository;
 
 @Service
 public class EventService {
 
     @Autowired
     private AmazonS3 s3Client;
+
+    @Autowired
+    private EventRepository repository; 
 
     @Value("${aws.bucket.name}")
     private String awsBucketName;
@@ -38,6 +42,8 @@ public class EventService {
         newEvent.setRemote(eventRequest.remote());
         newEvent.setEventUrl(eventRequest.eventUrl());
         newEvent.setImageUrl(imageUrl);
+
+        repository.save(newEvent);
 
         return newEvent;
     }
