@@ -73,4 +73,9 @@ public class EventService {
         return convFile;
     }
 
+        public Event getById(UUID eventId) {
+        return repository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found for ID: " + eventId));
+    }
+
 }
