@@ -1,10 +1,12 @@
 package com.eventostec.api.controller;
 
+import java.util.Date;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
@@ -32,9 +34,21 @@ public class EventController {
         return ResponseEntity.ok(event);
     }
 
-    @GetMapping
+    @GetMapping("/upcoming")
     public ResponseEntity<List<EventResponseDTO>> getAll(@PathParam("page") Integer page, @PathParam("size") Integer size) {
         List<EventResponseDTO> events = eventService.getUpComing(page, size);
+        return ResponseEntity.ok(events);
+    }
+
+    @GetMapping("/filter")
+    public ResponseEntity<List<EventResponseDTO>> filterEvents(@PathParam("title") String title,
+                                                                @PathParam("city") String city,
+                                                                @PathParam("uf") String uf,
+                                                                @PathParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+                                                                @PathParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
+                                                                @PathParam("page") Integer page,
+                                                                @PathParam("size") Integer size) {
+        List<EventResponseDTO> events = eventService.filterEvents(title, city, uf, startDate, endDate, page, size);
         return ResponseEntity.ok(events);
     }
 }
