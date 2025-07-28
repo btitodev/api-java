@@ -2,13 +2,15 @@ package com.eventostec.api.controller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -21,6 +23,7 @@ import com.eventostec.api.domain.event.EventDetailsDTO;
 import com.eventostec.api.domain.event.EventRequestDTO;
 import com.eventostec.api.domain.event.EventResponseDTO;
 import com.eventostec.api.service.EventService;
+import com.eventostec.api.validator.EventRequestValidator;
 
 import jakarta.websocket.server.PathParam;
 
@@ -30,27 +33,39 @@ public class EventController {
 
     @Autowired
     private EventService eventService;
+    
+    @Autowired
+    private EventRequestValidator eventRequestValidator;
 
     @PostMapping
-    public ResponseEntity<Event> create(@ModelAttribute EventRequestDTO body) {
+    public ResponseEntity<?> create(@ModelAttribute EventRequestDTO body, BindingResult result) {
+        eventRequestValidator.validate(body, result);
+
+        if (result.hasErrors()) {
+            Map<String, String> errors = result.getFieldErrors().stream()
+                    .collect(Collectors.toMap(FieldError::getField, FieldError::getDefaultMessage));
+            return ResponseEntity.badRequest().body(errors);
+        }
+
         Event event = eventService.create(body);
         return ResponseEntity.ok(event);
     }
 
     @GetMapping("/upcoming")
-    public ResponseEntity<List<EventResponseDTO>> getAll(@PathParam("page") Integer page, @PathParam("size") Integer size) {
+    public ResponseEntity<List<EventResponseDTO>> getAll(@PathParam("page") Integer page,
+            @PathParam("size") Integer size) {
         List<EventResponseDTO> events = eventService.getUpComing(page, size);
         return ResponseEntity.ok(events);
     }
 
     @GetMapping("/filter")
     public ResponseEntity<List<EventResponseDTO>> filterEvents(@PathParam("title") String title,
-                                                                @PathParam("city") String city,
-                                                                @PathParam("uf") String uf,
-                                                                @PathParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
-                                                                @PathParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
-                                                                @PathParam("page") Integer page,
-                                                                @PathParam("size") Integer size) {
+            @PathParam("city") String city,
+            @PathParam("uf") String uf,
+            @PathParam("startDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date startDate,
+            @PathParam("endDate") @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) Date endDate,
+            @PathParam("page") Integer page,
+            @PathParam("size") Integer size) {
         List<EventResponseDTO> events = eventService.filterEvents(title, city, uf, startDate, endDate, page, size);
         return ResponseEntity.ok(events);
     }
