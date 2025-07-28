@@ -1,10 +1,21 @@
 HELP.md
+
+# Diretórios de build
 target/
-.mvn/wrapper/maven-wrapper.jar
+build/
 !**/src/main/**/target/
 !**/src/test/**/target/
+!**/src/main/**/build/
+!**/src/test/**/build/
 
-### STS ###
+# Maven Wrapper
+.mvn/wrapper/maven-wrapper.jar
+
+# Arquivo de propriedades
+src/main/resources/application.properties
+# ou simplesmente: application.properties (se estiver na raiz)
+
+### Spring Tool Suite (STS)
 .apt_generated
 .classpath
 .factorypath
@@ -13,30 +24,18 @@ target/
 .springBeans
 .sts4-cache
 
-### IntelliJ IDEA ###
-.idea
+### IntelliJ IDEA
+.idea/
 *.iws
 *.iml
 *.ipr
 
-### NetBeans ###
+### NetBeans
 /nbproject/private/
 /nbbuild/
 /dist/
 /nbdist/
 /.nb-gradle/
-build/
-!**/src/main/**/build/
-!**/src/test/**/build/
 
-# Maven Wrapper
-.mvn/wrapper/maven-wrapper.jar
-
-# Arquivo de propriedades
-application.properties
-# ou, se estiver em src/main/resources:
-# src/main/resources/application.properties
-
-### VS Code ###
+### Visual Studio Code
 .vscode/
-
