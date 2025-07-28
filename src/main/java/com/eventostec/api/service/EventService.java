@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.amazonaws.services.s3.AmazonS3;
+import com.eventostec.api.domain.coupon.Coupon;
 import com.eventostec.api.domain.event.Event;
+import com.eventostec.api.domain.event.EventDetailsDTO;
 import com.eventostec.api.domain.event.EventRequestDTO;
 import com.eventostec.api.domain.event.EventResponseDTO;
 import com.eventostec.api.repositories.EventRepository;
@@ -29,6 +31,9 @@ public class EventService {
 
     @Autowired
     private EventRepository repository;
+
+    @Autowired
+    private CouponService couponService;
 
     @Value("${aws.bucket.name}")
     private String awsBucketName;
@@ -60,9 +65,20 @@ public class EventService {
         return newEvent;
     }
 
-    public Event getById(UUID eventId) {
-        return repository.findById(eventId)
+    public EventResponseDTO getById(UUID eventId) {
+        Event event = repository.findById(eventId)
                 .orElseThrow(() -> new IllegalArgumentException("Event not found for ID: " + eventId));
+        return new EventResponseDTO(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getDate(),
+                event.getAddress() != null ? event.getAddress().getCity() : "",
+                event.getAddress() != null ? event.getAddress().getUf() : "",
+                event.getRemote(),
+                event.getEventUrl(),
+                event.getImageUrl()
+        );
     }
 
     public List<EventResponseDTO> getUpComing(Integer page, Integer size) {
@@ -137,6 +153,34 @@ public class EventService {
             fos.write(file.getBytes());
         }
         return convFile;
+    }
+
+    public EventDetailsDTO getDetailsById(UUID fromString) {
+        Event event = repository.findById(fromString)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found for ID: " + fromString));
+
+        List<Coupon> coupons = couponService.getCouponsByEventId(event.getId());
+
+        List<EventDetailsDTO.CouponDTO> couponDTOs = coupons.stream()
+                .map(coupon -> new EventDetailsDTO.CouponDTO(
+                        coupon.getCode(),
+                        coupon.getDiscount(),
+                        coupon.getValid()))
+                .toList();
+
+
+        return new EventDetailsDTO(
+                event.getId(),
+                event.getTitle(),
+                event.getDescription(),
+                event.getImageUrl(),
+                event.getEventUrl(),
+                event.getRemote(),
+                event.getDate(),
+                event.getAddress() != null ? event.getAddress().getCity() : "",
+                event.getAddress() != null ? event.getAddress().getUf() : "",
+                couponDTOs
+        );
     }
 
 }

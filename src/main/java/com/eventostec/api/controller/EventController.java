@@ -2,6 +2,7 @@ package com.eventostec.api.controller;
 
 import java.util.Date;
 import java.util.List;
+import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
@@ -10,11 +11,13 @@ import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.eventostec.api.domain.event.Event;
+import com.eventostec.api.domain.event.EventDetailsDTO;
 import com.eventostec.api.domain.event.EventRequestDTO;
 import com.eventostec.api.domain.event.EventResponseDTO;
 import com.eventostec.api.service.EventService;
@@ -50,5 +53,17 @@ public class EventController {
                                                                 @PathParam("size") Integer size) {
         List<EventResponseDTO> events = eventService.filterEvents(title, city, uf, startDate, endDate, page, size);
         return ResponseEntity.ok(events);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EventResponseDTO> getEventById(@PathVariable("id") String id) {
+        EventResponseDTO event = eventService.getById(UUID.fromString(id));
+        return ResponseEntity.ok(event);
+    }
+
+    @GetMapping("/details/{id}")
+    public ResponseEntity<EventDetailsDTO> getEventDetailsById(@PathVariable("id") String id) {
+        EventDetailsDTO eventDetails = eventService.getDetailsById(UUID.fromString(id));
+        return ResponseEntity.ok(eventDetails);
     }
 }
