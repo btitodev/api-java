@@ -34,7 +34,7 @@ public class EventService {
     @Value("${aws.bucket.name}")
     private String awsBucketName;
 
-    public Event createEvent(EventRequestDTO eventRequest) {
+    public Event create(EventRequestDTO eventRequest) {
         String imageUrl = null;
 
         if (eventRequest.image() != null) {
@@ -52,6 +52,27 @@ public class EventService {
         repository.save(newEvent);
 
         return newEvent;
+    }
+
+    public Event getById(UUID eventId) {
+        return repository.findById(eventId)
+                .orElseThrow(() -> new IllegalArgumentException("Event not found for ID: " + eventId));
+    }
+
+    public List<EventResponseDTO> getUpComing(Integer page, Integer size) {
+        if (page == null || page < 0) {
+            page = 0;
+        }
+        if (size == null || size < 1) {
+            size = 10;
+        }
+
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Event> eventsPage = repository.findAllUpcomingEvents(pageable);
+        return eventsPage
+                .map(event -> new EventResponseDTO(event.getId(), event.getTitle(), event.getDescription(),
+                        event.getDate(), "", "", event.getRemote(), event.getEventUrl(), event.getImageUrl()))
+                .stream().toList();
     }
 
     private String uploadImage(MultipartFile multipartFile) {
@@ -77,26 +98,6 @@ public class EventService {
             fos.write(file.getBytes());
         }
         return convFile;
-    }
-
-    public Event getById(UUID eventId) {
-        return repository.findById(eventId)
-                .orElseThrow(() -> new IllegalArgumentException("Event not found for ID: " + eventId));
-    }
-
-    public List<EventResponseDTO> getAllEvents(Integer page, Integer size) {
-        if (page == null || page < 0) {
-            page = 0;
-        }
-        if (size == null || size < 1) {
-            size = 10;
-        }
-        Pageable pageable = PageRequest.of(page, size);
-        Page<Event> eventsPage = repository.findAll(pageable);
-        return eventsPage
-                .map(event -> new EventResponseDTO(event.getId(), event.getTitle(), event.getDescription(),
-                        event.getDate(), "", "", event.getRemote(), event.getEventUrl(), event.getImageUrl()))
-                .stream().toList();
     }
 
 }

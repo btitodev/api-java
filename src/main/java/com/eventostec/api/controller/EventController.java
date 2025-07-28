@@ -28,13 +28,13 @@ public class EventController {
 
     @PostMapping
     public ResponseEntity<Event> create(@ModelAttribute EventRequestDTO body) {
-        Event event = eventService.createEvent(body);
+        Event event = eventService.create(body);
         return ResponseEntity.ok(event);
     }
 
     @GetMapping
     public ResponseEntity<List<EventResponseDTO>> getAll(@PathParam("page") Integer page, @PathParam("size") Integer size) {
-        List<EventResponseDTO> events = eventService.getAllEvents(page, size);
+        List<EventResponseDTO> events = eventService.getUpComing(page, size);
         return ResponseEntity.ok(events);
     }
 }
